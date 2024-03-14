@@ -77,53 +77,73 @@ MOD_ASSIGN: '%=';
 DIVIDE_ASSIGN: '/=';
 
 // ---------- INT, DECIMAL, BIN, HEX LITERAL   ------------------
-UNDERSCORE : '_';
-DECIMAL_DIGIT : '0'..'9' ;
-BINARY_DIGIT  : '0' | '1' ;
-OCTAL_DIGIT   : '0'..'7';
-HEX_DIGIT     : '0'..'9' | 'A'..'F' | 'a'..'f';
+fragment UNDERSCORE : '_';
+fragment DECIMAL_DIGIT : '0'..'9' ;
+fragment BINARY_DIGIT  : '0' | '1' ;
+fragment OCTAL_DIGIT   : '0'..'7';
+fragment HEX_DIGIT : [0-9a-fA-F];
 
-DECIMAL_DIGITS : DECIMAL_DIGIT (UNDERSCORE? DECIMAL_DIGIT)* ;
-BINARY_DIGITS  : BINARY_DIGIT (UNDERSCORE? BINARY_DIGIT)* ;
-OCTAL_DIGITS   : OCTAL_DIGIT (UNDERSCORE? OCTAL_DIGIT)* ;
-HEX_DIGITS     : HEX_DIGIT (UNDERSCORE? HEX_DIGIT)* ;
+fragment DECIMAL_DIGITS : DECIMAL_DIGIT (UNDERSCORE? DECIMAL_DIGIT)* ;
+fragment BINARY_DIGITS  : BINARY_DIGIT (UNDERSCORE? BINARY_DIGIT)* ;
+fragment OCTAL_DIGITS   : OCTAL_DIGIT (UNDERSCORE? OCTAL_DIGIT)* ;
+fragment HEX_DIGITS     : HEX_DIGIT (UNDERSCORE? HEX_DIGIT)* ;
 
 INT_LIT     : DECIMAL_LIT | BINARY_LIT | OCTAL_LIT | HEX_LIT ;
-DECIMAL_LIT : '0' | ('1' .. '9') '_'? DECIMAL_DIGITS?;
-BINARY_LIT  : '0' ('B' | 'b') '_'? BINARY_DIGITS;
-OCTAL_LIT   : '0' ('O' | 'o') '_'? OCTAL_DIGITS;
-HEX_LIT     : '0' ('X' | 'x') '_'? HEX_DIGITS;
+fragment DECIMAL_LIT : '0' | ('1' .. '9') '_'? DECIMAL_DIGITS?;
+fragment BINARY_LIT  : '0' ('B' | 'b') '_'? BINARY_DIGITS;
+fragment OCTAL_LIT   : '0' ('O' | 'o') '_'? OCTAL_DIGITS;
+fragment HEX_LIT     : '0' ('X' | 'x') '_'? HEX_DIGITS;
 
 
 // ---------- Identifier   ------------------
 
-UNICODE_LETTER : [\p{L}];
-UNICODE_DIGIT : [\p{Nd}];
+fragment UNICODE_LETTER : [\p{L}];
+fragment UNICODE_DIGIT : [\p{Nd}];
 
-LETTER : UNICODE_LETTER | UNDERSCORE ;
+fragment LETTER : UNICODE_LETTER | UNDERSCORE ;
 IDENTIFIER : LETTER (LETTER | UNICODE_DIGIT)* ;
 
 // ---------- Float Literal     -----------------------
 
-DECIMAL_EXPONENT : [eE] [+\-]? DECIMAL_DIGITS ;
-DECIMAL_FLOAT_LIT : DECIMAL_DIGITS '.' (DECIMAL_DIGITS? DECIMAL_EXPONENT? | DECIMAL_EXPONENT)
+fragment DECIMAL_EXPONENT : [eE] [+\-]? DECIMAL_DIGITS ;
+fragment DECIMAL_FLOAT_LIT : DECIMAL_DIGITS '.' (DECIMAL_DIGITS? DECIMAL_EXPONENT? | DECIMAL_EXPONENT)
     | DECIMAL_DIGITS DECIMAL_EXPONENT
     | '.' DECIMAL_DIGITS (DECIMAL_EXPONENT)?
     ;
-HEX_FLOAT_LIT
+fragment HEX_FLOAT_LIT
     : '0' [xX] HEX_MANTISSA HEX_EXPONENT
     ;
-HEX_MANTISSA
+fragment HEX_MANTISSA
     : UNDERSCORE? HEX_DIGITS '.' (HEX_DIGITS? | UNDERSCORE)
     | UNDERSCORE? HEX_DIGITS
     | '.' HEX_DIGITS
     ;
-HEX_EXPONENT
+fragment HEX_EXPONENT
     : [pP] [+\-]? DECIMAL_DIGITS
     ;
+
 FLOAT_LIT : DECIMAL_FLOAT_LIT | HEX_FLOAT_LIT ;
 
 // ---------- Char Literal (RUNELITERAL)    -----------------------
+fragment UNICODE_CHAR : . ;
+fragment LITTLE_U_VALUE : '\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
+fragment BIG_U_VALUE : '\\U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
+fragment ESCAPED_CHAR : '\\' ( 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '\\' | '\'' | '"' ) ;
+fragment UNICODE_VALUE : UNICODE_CHAR | LITTLE_U_VALUE | BIG_U_VALUE | ESCAPED_CHAR;
+fragment OCTAL_BYTE_VALUE : '\\' OCTAL_DIGIT OCTAL_DIGIT OCTAL_DIGIT ;
+fragment HEX_BYTE_VALUE : '\\' 'x' HEX_DIGIT HEX_DIGIT ;
+fragment BYTE_VALUE : OCTAL_BYTE_VALUE | HEX_BYTE_VALUE;
 
+RUNE_LIT : '\'' ( UNICODE_VALUE | BYTE_VALUE ) '\'';
 
 // ---------- Strings Literal (RAWSTRINGLITERAL,INTERPRETEDSTRINGLITERAL )   -----------------------
+
+fragment NEWLINE: '\n';
+fragment RAW_STRING_LIT: '`' (UNICODE_CHAR | NEWLINE)* '`';
+fragment INTERPRETED_STRING_LIT: '"' (UNICODE_VALUE | BYTE_VALUE)* '"';
+STRING_LIT : RAW_STRING_LIT | INTERPRETED_STRING_LIT;
+
+
+// ---------- Others   -----------------------
+
+WS  :   [ \t\n\r]+ -> skip ;
