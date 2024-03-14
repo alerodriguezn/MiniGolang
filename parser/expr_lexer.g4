@@ -13,13 +13,14 @@ APPEND    : 'append';
 LENGHT    : 'len';
 CAP       : 'cap';
 PRINT     : 'print';
+PRINTLN   : 'println';
 RETURN    : 'return';
 BREAK     : 'break';
 CONTINUE  : 'continue';
 IF        : 'if';
 ELSE      : 'else';
 FOR       : 'for';
-SWITH     : 'switch';
+SWITCH     : 'switch';
 CASE      : 'case';
 DEFAULT   : 'default';
 
@@ -31,11 +32,12 @@ SEMICOLON : ';' ;
 COLON     : ':' ;
 DOT       : '.' ;
 LPAREN    : '(' ;
-DPAREN    : ')' ;
+RPAREN    : ')' ;
 RBRACK    : ']' ;
 LBRACK    : '[' ;
 LBRACE    : '{' ;
 RBRACE    : '}' ;
+COMMA     : ',' ;
 
 
 
@@ -139,8 +141,8 @@ RUNE_LIT : '\'' ( UNICODE_VALUE | BYTE_VALUE ) '\'';
 // ---------- Strings Literal (RAWSTRINGLITERAL,INTERPRETEDSTRINGLITERAL )   -----------------------
 
 fragment NEWLINE: '\n';
-fragment RAW_STRING_LIT: '`' (UNICODE_CHAR | NEWLINE)* '`';
-fragment INTERPRETED_STRING_LIT: '"' (UNICODE_VALUE | BYTE_VALUE)* '"';
+RAW_STRING_LIT: '`' (UNICODE_CHAR | NEWLINE)* '`';
+INTERPRETED_STRING_LIT: '"' (UNICODE_VALUE | BYTE_VALUE)* '"';
 STRING_LIT : RAW_STRING_LIT | INTERPRETED_STRING_LIT;
 
 
