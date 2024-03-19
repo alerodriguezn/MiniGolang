@@ -31,10 +31,12 @@ singleTypeDecl : IDENTIFIER declType ;
 funcDecl: funcFrontDecl block SEMICOLON;
 
 //Alternative for function declaration
+//funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls? RPAREN declType?;
 funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls RPAREN declType
               | FUNCTION IDENTIFIER LPAREN funcArgDecls RPAREN
               | FUNCTION IDENTIFIER LPAREN RPAREN declType
-              | FUNCTION IDENTIFIER LPAREN RPAREN ;
+              | FUNCTION IDENTIFIER LPAREN RPAREN
+              | FUNCTION IDENTIFIER declType ;
 
 
 funcArgDecls : (singleVarDeclNoExps COMMA)* singleVarDeclNoExps ;
@@ -89,16 +91,16 @@ statementList : statement* ;
 
 block : LBRACE statementList RBRACE ;
 
-statement : PRINT LPAREN expressionList? RPAREN COMMA 
-          | PRINTLN LPAREN expressionList? RPAREN COMMA 
-          | RETURN expression? COMMA
-          | BREAK COMMA
-          | CONTINUE COMMA
-          | simpleStatement COMMA
-          | block COMMA
-          | switch COMMA
-          | ifStatement COMMA
-          | loop COMMA
+statement : PRINT LPAREN expressionList? RPAREN SEMICOLON
+          | PRINTLN LPAREN expressionList? RPAREN SEMICOLON
+          | RETURN expression? SEMICOLON
+          | BREAK SEMICOLON
+          | CONTINUE SEMICOLON
+          | simpleStatement SEMICOLON
+          | block SEMICOLON
+          | switch SEMICOLON
+          | ifStatement SEMICOLON
+          | loop SEMICOLON
           | typeDecl
           | variableDecl ;
 

@@ -2,12 +2,18 @@ package main
 
 import (
 	"MiniGolang/parser"
+	"MiniGolang/routes"
 	"github.com/antlr4-go/antlr/v4"
 )
 
 func main() {
-	// Test Lexer
-	input, _ := antlr.NewFileStream( /*os.Args[1]*/ "test.txt")
+
+	routes.Run()
+
+}
+
+func testLexer() {
+	input, _ := antlr.NewFileStream( /*os.Args[1]*/ "example1.minigo")
 	inst := parser.Newexpr_lexer(input)
 	tokens := antlr.NewCommonTokenStream(inst, 0)
 
@@ -26,5 +32,4 @@ func main() {
 		println(tokenLiteralName, " ", token.GetText())
 
 	}
-
 }
