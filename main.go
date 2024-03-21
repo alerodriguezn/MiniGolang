@@ -18,6 +18,7 @@ func testLexer() {
 	tokens := antlr.NewCommonTokenStream(inst, 0)
 
 	tokens.Fill()
+	//get Token recognition error
 
 	allTokens := tokens.GetAllTokens()
 

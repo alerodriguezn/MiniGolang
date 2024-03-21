@@ -2,6 +2,7 @@ package routes
 
 import (
 	"MiniGolang/parser"
+	"fmt"
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/gin-gonic/gin"
 )
@@ -24,8 +25,9 @@ func parseCode(rg *gin.RouterGroup) {
 		errors := parseString(code.Code)
 
 		if errors != nil {
+			totalErrors := len(errors)
 			c.JSON(200, gin.H{
-				"message": "Compilation failed! Errors found. ⚠️",
+				"message": fmt.Sprintf("Compilation failed! %d Errors found. ⚠️", totalErrors),
 				"errors":  errors,
 			})
 			return
@@ -41,7 +43,10 @@ func parseString(code string) []parser.SyntaxErrorInformation {
 
 	input := antlr.NewInputStream(code)
 	lexer := parser.Newexpr_lexer(input)
+
 	stream := antlr.NewCommonTokenStream(lexer, 0)
+	//get tokens
+	stream.Fill()
 	p := parser.Newexpr_parser(stream)
 	errorListener := &parser.CustomErrorListener{}
 	p.AddErrorListener(errorListener)

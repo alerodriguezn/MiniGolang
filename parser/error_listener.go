@@ -15,12 +15,16 @@ type CustomErrorListener struct {
 	Errors []SyntaxErrorInformation
 }
 
+
+
 func (cel *CustomErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	//print customMessage
 
 	cel.Errors = append(cel.Errors, SyntaxErrorInformation{
 		Message: msg,
 		Line:    line,
 		Column:  column,
 	})
-
 }
+
+

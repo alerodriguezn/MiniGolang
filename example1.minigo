@@ -1,5 +1,1 @@
-package main;
-func myFunction() int {
-    var x int = 1;
-    return x;
-};
+#
