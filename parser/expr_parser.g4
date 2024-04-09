@@ -8,7 +8,6 @@ options {
 
 root : PACKAGE IDENTIFIER SEMICOLON topDeclarationList;
 
-
 topDeclarationList : (variableDecl | typeDecl | funcDecl)*;
 
 variableDecl : VAR (singleVarDecl | LPAREN innerVarDecls? RPAREN) SEMICOLON ;

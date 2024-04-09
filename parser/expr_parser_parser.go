@@ -523,6 +523,16 @@ func (s *RootContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) s
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *RootContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitRoot(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Root() (localctx IRootContext) {
 	localctx = NewRootContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 0, expr_parserRULE_root)
@@ -751,6 +761,16 @@ func (s *TopDeclarationListContext) ToStringTree(ruleNames []string, recog antlr
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *TopDeclarationListContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitTopDeclarationList(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) TopDeclarationList() (localctx ITopDeclarationListContext) {
 	localctx = NewTopDeclarationListContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 2, expr_parserRULE_topDeclarationList)
@@ -921,6 +941,16 @@ func (s *VariableDeclContext) GetRuleContext() antlr.RuleContext {
 
 func (s *VariableDeclContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *VariableDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitVariableDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) VariableDecl() (localctx IVariableDeclContext) {
@@ -1114,6 +1144,16 @@ func (s *InnerVarDeclsContext) ToStringTree(ruleNames []string, recog antlr.Reco
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *InnerVarDeclsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitInnerVarDecls(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) InnerVarDecls() (localctx IInnerVarDeclsContext) {
 	localctx = NewInnerVarDeclsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 6, expr_parserRULE_innerVarDecls)
@@ -1288,6 +1328,16 @@ func (s *SingleVarDeclContext) ToStringTree(ruleNames []string, recog antlr.Reco
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SingleVarDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSingleVarDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) SingleVarDecl() (localctx ISingleVarDeclContext) {
 	localctx = NewSingleVarDeclContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 8, expr_parserRULE_singleVarDecl)
@@ -1451,6 +1501,16 @@ func (s *SingleVarDeclNoExpsContext) ToStringTree(ruleNames []string, recog antl
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SingleVarDeclNoExpsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSingleVarDeclNoExps(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) SingleVarDeclNoExps() (localctx ISingleVarDeclNoExpsContext) {
 	localctx = NewSingleVarDeclNoExpsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 10, expr_parserRULE_singleVarDeclNoExps)
@@ -1582,6 +1642,16 @@ func (s *TypeDeclContext) GetRuleContext() antlr.RuleContext {
 
 func (s *TypeDeclContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *TypeDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitTypeDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) TypeDecl() (localctx ITypeDeclContext) {
@@ -1775,6 +1845,16 @@ func (s *InnerTypeDeclsContext) ToStringTree(ruleNames []string, recog antlr.Rec
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *InnerTypeDeclsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitInnerTypeDecls(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) InnerTypeDecls() (localctx IInnerTypeDeclsContext) {
 	localctx = NewInnerTypeDeclsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 14, expr_parserRULE_innerTypeDecls)
@@ -1910,6 +1990,16 @@ func (s *SingleTypeDeclContext) ToStringTree(ruleNames []string, recog antlr.Rec
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SingleTypeDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSingleTypeDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) SingleTypeDecl() (localctx ISingleTypeDeclContext) {
 	localctx = NewSingleTypeDeclContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 16, expr_parserRULE_singleTypeDecl)
@@ -2030,6 +2120,16 @@ func (s *FuncDeclContext) GetRuleContext() antlr.RuleContext {
 
 func (s *FuncDeclContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *FuncDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitFuncDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) FuncDecl() (localctx IFuncDeclContext) {
@@ -2171,6 +2271,16 @@ func (s *FuncFrontDeclContext) GetRuleContext() antlr.RuleContext {
 
 func (s *FuncFrontDeclContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *FuncFrontDeclContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitFuncFrontDecl(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) FuncFrontDecl() (localctx IFuncFrontDeclContext) {
@@ -2485,6 +2595,16 @@ func (s *FuncArgDeclsContext) ToStringTree(ruleNames []string, recog antlr.Recog
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *FuncArgDeclsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitFuncArgDecls(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) FuncArgDecls() (localctx IFuncArgDeclsContext) {
 	localctx = NewFuncArgDeclsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 22, expr_parserRULE_funcArgDecls)
@@ -2680,6 +2800,16 @@ func (s *DeclTypeContext) ToStringTree(ruleNames []string, recog antlr.Recognize
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *DeclTypeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitDeclType(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) DeclType() (localctx IDeclTypeContext) {
 	localctx = NewDeclTypeContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 24, expr_parserRULE_declType)
@@ -2845,6 +2975,16 @@ func (s *SliceDeclTypeContext) ToStringTree(ruleNames []string, recog antlr.Reco
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SliceDeclTypeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSliceDeclType(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) SliceDeclType() (localctx ISliceDeclTypeContext) {
 	localctx = NewSliceDeclTypeContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 26, expr_parserRULE_sliceDeclType)
@@ -2966,6 +3106,16 @@ func (s *ArrayDeclTypeContext) GetRuleContext() antlr.RuleContext {
 
 func (s *ArrayDeclTypeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *ArrayDeclTypeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitArrayDeclType(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) ArrayDeclType() (localctx IArrayDeclTypeContext) {
@@ -3097,6 +3247,16 @@ func (s *StructDeclTypeContext) GetRuleContext() antlr.RuleContext {
 
 func (s *StructDeclTypeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *StructDeclTypeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitStructDeclType(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) StructDeclType() (localctx IStructDeclTypeContext) {
@@ -3263,6 +3423,16 @@ func (s *StructMemDeclsContext) ToStringTree(ruleNames []string, recog antlr.Rec
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *StructMemDeclsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitStructMemDecls(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) StructMemDecls() (localctx IStructMemDeclsContext) {
 	localctx = NewStructMemDeclsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 32, expr_parserRULE_structMemDecls)
@@ -3394,6 +3564,16 @@ func (s *IdentifierListContext) GetRuleContext() antlr.RuleContext {
 
 func (s *IdentifierListContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *IdentifierListContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitIdentifierList(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) IdentifierList() (localctx IIdentifierListContext) {
@@ -3676,6 +3856,16 @@ func (s *ExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recogni
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *ExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Expression() (localctx IExpressionContext) {
 	return p.expression(0)
 }
@@ -3897,6 +4087,16 @@ func (s *ExpressionListContext) GetRuleContext() antlr.RuleContext {
 
 func (s *ExpressionListContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *ExpressionListContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitExpressionList(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) ExpressionList() (localctx IExpressionListContext) {
@@ -4138,6 +4338,16 @@ func (s *PrimaryExpressionContext) GetRuleContext() antlr.RuleContext {
 
 func (s *PrimaryExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *PrimaryExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitPrimaryExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) PrimaryExpression() (localctx IPrimaryExpressionContext) {
@@ -4387,6 +4597,16 @@ func (s *OperandContext) ToStringTree(ruleNames []string, recog antlr.Recognizer
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *OperandContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitOperand(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Operand() (localctx IOperandContext) {
 	localctx = NewOperandContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 42, expr_parserRULE_operand)
@@ -4529,6 +4749,16 @@ func (s *LiteralContext) ToStringTree(ruleNames []string, recog antlr.Recognizer
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *LiteralContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitLiteral(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Literal() (localctx ILiteralContext) {
 	localctx = NewLiteralContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 44, expr_parserRULE_literal)
@@ -4638,6 +4868,16 @@ func (s *IndexContext) GetRuleContext() antlr.RuleContext {
 
 func (s *IndexContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *IndexContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitIndex(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) Index() (localctx IIndexContext) {
@@ -4758,6 +4998,16 @@ func (s *ArgumentsContext) ToStringTree(ruleNames []string, recog antlr.Recogniz
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *ArgumentsContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitArguments(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Arguments() (localctx IArgumentsContext) {
 	localctx = NewArgumentsContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 48, expr_parserRULE_arguments)
@@ -4869,6 +5119,16 @@ func (s *SelectorContext) GetRuleContext() antlr.RuleContext {
 
 func (s *SelectorContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *SelectorContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSelector(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) Selector() (localctx ISelectorContext) {
@@ -5021,6 +5281,16 @@ func (s *AppendExpressionContext) ToStringTree(ruleNames []string, recog antlr.R
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *AppendExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitAppendExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) AppendExpression() (localctx IAppendExpressionContext) {
 	localctx = NewAppendExpressionContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 52, expr_parserRULE_appendExpression)
@@ -5164,6 +5434,16 @@ func (s *LengthExpressionContext) ToStringTree(ruleNames []string, recog antlr.R
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *LengthExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitLengthExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) LengthExpression() (localctx ILengthExpressionContext) {
 	localctx = NewLengthExpressionContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 54, expr_parserRULE_lengthExpression)
@@ -5293,6 +5573,16 @@ func (s *CapExpressionContext) GetRuleContext() antlr.RuleContext {
 
 func (s *CapExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *CapExpressionContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitCapExpression(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) CapExpression() (localctx ICapExpressionContext) {
@@ -5437,6 +5727,16 @@ func (s *StatementListContext) ToStringTree(ruleNames []string, recog antlr.Reco
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *StatementListContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitStatementList(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) StatementList() (localctx IStatementListContext) {
 	localctx = NewStatementListContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 58, expr_parserRULE_statementList)
@@ -5555,6 +5855,16 @@ func (s *BlockContext) GetRuleContext() antlr.RuleContext {
 
 func (s *BlockContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *BlockContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitBlock(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) Block() (localctx IBlockContext) {
@@ -5839,6 +6149,16 @@ func (s *StatementContext) GetRuleContext() antlr.RuleContext {
 
 func (s *StatementContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *StatementContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitStatement(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) Statement() (localctx IStatementContext) {
@@ -6274,6 +6594,16 @@ func (s *SimpleStatementContext) ToStringTree(ruleNames []string, recog antlr.Re
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SimpleStatementContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSimpleStatement(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) SimpleStatement() (localctx ISimpleStatementContext) {
 	localctx = NewSimpleStatementContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 64, expr_parserRULE_simpleStatement)
@@ -6556,6 +6886,16 @@ func (s *AssignmentStatementContext) ToStringTree(ruleNames []string, recog antl
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *AssignmentStatementContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitAssignmentStatement(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) AssignmentStatement() (localctx IAssignmentStatementContext) {
 	localctx = NewAssignmentStatementContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 66, expr_parserRULE_assignmentStatement)
@@ -6786,6 +7126,16 @@ func (s *IfStatementContext) GetRuleContext() antlr.RuleContext {
 
 func (s *IfStatementContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *IfStatementContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitIfStatement(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) IfStatement() (localctx IIfStatementContext) {
@@ -7158,6 +7508,16 @@ func (s *LoopContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) s
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *LoopContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitLoop(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Loop() (localctx ILoopContext) {
 	localctx = NewLoopContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 70, expr_parserRULE_loop)
@@ -7425,6 +7785,16 @@ func (s *SwitchContext) ToStringTree(ruleNames []string, recog antlr.Recognizer)
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *SwitchContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitSwitch(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) Switch_() (localctx ISwitchContext) {
 	localctx = NewSwitchContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 72, expr_parserRULE_switch)
@@ -7613,6 +7983,16 @@ func (s *ExpressionCaseClauseListContext) ToStringTree(ruleNames []string, recog
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *ExpressionCaseClauseListContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitExpressionCaseClauseList(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) ExpressionCaseClauseList() (localctx IExpressionCaseClauseListContext) {
 	localctx = NewExpressionCaseClauseListContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 74, expr_parserRULE_expressionCaseClauseList)
@@ -7745,6 +8125,16 @@ func (s *ExpressionCaseClauseContext) ToStringTree(ruleNames []string, recog ant
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
+func (s *ExpressionCaseClauseContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitExpressionCaseClause(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *expr_parser) ExpressionCaseClause() (localctx IExpressionCaseClauseContext) {
 	localctx = NewExpressionCaseClauseContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 76, expr_parserRULE_expressionCaseClause)
@@ -7857,6 +8247,16 @@ func (s *ExpressionSwitchCaseContext) GetRuleContext() antlr.RuleContext {
 
 func (s *ExpressionSwitchCaseContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *ExpressionSwitchCaseContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case expr_parserVisitor:
+		return t.VisitExpressionSwitchCase(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
 }
 
 func (p *expr_parser) ExpressionSwitchCase() (localctx IExpressionSwitchCaseContext) {

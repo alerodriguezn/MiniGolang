@@ -17,7 +17,6 @@ func Run() {
 		return
 	}
 
-
 }
 
 func getRoutes() {
