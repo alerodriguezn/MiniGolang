@@ -145,6 +145,7 @@ func (v *Checker) VisitSimpleStatement(ctx *parser.SimpleStatementContext) inter
 }
 
 func (v *Checker) VisitAssignmentStatement(ctx *parser.AssignmentStatementContext) interface{} {
+
 	return v.VisitChildren(ctx)
 }
 
