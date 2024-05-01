@@ -1,14 +1,46 @@
 package main
 
 import (
+	"MiniGolang/checker"
 	"MiniGolang/parser"
-	"MiniGolang/routes"
 	"github.com/antlr4-go/antlr/v4"
 )
 
 func main() {
 
-	routes.Run()
+	//routes.Run()
+	testParser()
+	//testLexer()
+}
+
+func testParser() {
+	input, _ := antlr.NewFileStream( /*os.Args[1]*/ "example1.minigo")
+	lexer := parser.Newexpr_lexer(input)
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+	p := parser.Newexpr_parser(stream)
+	errorListener := &parser.CustomErrorListener{}
+	p.AddErrorListener(errorListener)
+
+	tree := p.Root()
+	c := checker.NewChecker(errorListener)
+	c.Visit(tree)
+
+	allError := c.ErrorListener.Errors
+	if allError != nil {
+		for _, err := range allError {
+			println(err.Message)
+		}
+		return
+
+	}
+
+	//c.Table.Print()
+
+	//print errorlist
+	//for _, err := range c.ErrorList {
+	//	println(err)
+	//
+	//}
 
 }
 
