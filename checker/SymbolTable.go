@@ -26,6 +26,7 @@ type Identifier struct {
 	isSlice    bool
 	isStruct   bool
 	isArray    bool
+	Size 	 int
 	list       []*Identifier
 }
 
@@ -52,6 +53,9 @@ func (s *SymbolTable) AddPredefinedType() {
 	s.AvailableTypes = append(s.AvailableTypes, "string")
 	s.AvailableTypes = append(s.AvailableTypes, "bool")
 	s.AvailableTypes = append(s.AvailableTypes, "char")
+	s.AvailableTypes = append(s.AvailableTypes, "struct")
+	s.AvailableTypes = append(s.AvailableTypes, "void")
+
 }
 
 func (s *SymbolTable) isValidType(t string) bool {
@@ -133,16 +137,7 @@ func (s *SymbolTable) NewType(token antlr.Token, value string, typ string, isSli
 	}
 }
 
-func (s *SymbolTable) NewAliasType(token antlr.Token, value string, typ string) *Identifier {
-	return &Identifier{
-		Token:   token,
-		Type:    typeId,
-		Value:   value,
-		Level:   s.CurrentLevel,
-		LitType: typ,
-		list:    []*Identifier{},
-	}
-}
+
 
 func (s *SymbolTable) NewFun(token antlr.Token, value string, typ string, list []*Identifier) *Identifier {
 	return &Identifier{

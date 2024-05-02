@@ -4,6 +4,7 @@ import (
 	"MiniGolang/parser"
 	"fmt"
 	"github.com/antlr4-go/antlr/v4"
+	"strconv"
 )
 
 type Checker struct {
@@ -48,63 +49,63 @@ func (v *Checker) VisitRoot(ctx *parser.RootContext) interface{} {
 		v.Visit(typ)
 	}
 
-	functions := ctx.TopDeclarationList().AllFuncDecl()
+	//functions := ctx.TopDeclarationList().AllFuncDecl()
+	//
+	//for _, function := range functions {
+	//	rtype := DeclTypeInfo{
+	//		Identifier: "",
+	//		IsSlice:    false,
+	//		IsStruct:   false,
+	//		IsArray:    false,
+	//	}
+	//	//Get the return type of the function
+	//	returnType := function.FuncFrontDecl().DeclType()
+	//	if returnType != nil {
+	//		rtype = v.Visit(returnType).(DeclTypeInfo)
+	//	}
+	//
+	//	// Save the arguments of the function
+	//	var members []*Identifier
+	//	if args := function.FuncFrontDecl().FuncArgDecls(); args != nil {
+	//		for _, arg := range args.AllSingleVarDeclNoExps() {
+	//			argType := v.Visit(arg.DeclType()).(DeclTypeInfo)
+	//
+	//			ids := arg.IdentifierList().AllIDENTIFIER()
+	//			for _, id := range ids {
+	//
+	//				isValidType := v.Table.isValidType(argType.Identifier)
+	//				if !isValidType {
+	//					v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", argType.Identifier))
+	//					v.ErrorListener.SyntaxError(nil, arg.GetStart(), arg.GetStart().GetLine(), arg.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", argType.Identifier), nil)
+	//				}
+	//				variable := v.Table.NewVar(id.GetSymbol(), id.GetText(), argType.Identifier)
+	//
+	//				//add to members
+	//				members = append(members, variable)
+	//
+	//			}
+	//
+	//		}
+	//	}
+	//	// Add the function to the symbol table
+	//
+	//	isValidFnType := v.Table.isValidType(rtype.Identifier)
+	//	if !isValidFnType {
+	//		v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", rtype.Identifier))
+	//		v.ErrorListener.SyntaxError(nil, function.GetStart(), function.GetStart().GetLine(), function.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", rtype.Identifier), nil)
+	//
+	//	}
+	//	fn := v.Table.NewFun(function.FuncFrontDecl().IDENTIFIER().GetSymbol(), function.FuncFrontDecl().IDENTIFIER().GetText(), rtype.Identifier, members)
+	//	err := v.Table.AddElement(fn)
+	//	if err != nil {
+	//		v.ErrorList = append(v.ErrorList, err.Error())
+	//		v.ErrorListener.SyntaxError(nil, function.GetStart(), function.GetStart().GetLine(), function.GetStart().GetColumn(), err.Error(), nil)
+	//
+	//	}
+	//
+	//}
 
-	for _, function := range functions {
-		rtype := DeclTypeInfo{
-			Identifier: "",
-			IsSlice:    false,
-			IsStruct:   false,
-			IsArray:    false,
-		}
-		//Get the return type of the function
-		returnType := function.FuncFrontDecl().DeclType()
-		if returnType != nil {
-			rtype = v.Visit(returnType).(DeclTypeInfo)
-		}
-
-		// Save the arguments of the function
-		var members []*Identifier
-		if args := function.FuncFrontDecl().FuncArgDecls(); args != nil {
-			for _, arg := range args.AllSingleVarDeclNoExps() {
-				argType := v.Visit(arg.DeclType()).(DeclTypeInfo)
-
-				ids := arg.IdentifierList().AllIDENTIFIER()
-				for _, id := range ids {
-
-					isValidType := v.Table.isValidType(argType.Identifier)
-					if !isValidType {
-						v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", argType.Identifier))
-						v.ErrorListener.SyntaxError(nil, arg.GetStart(), arg.GetStart().GetLine(), arg.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", argType.Identifier), nil)
-					}
-					variable := v.Table.NewVar(id.GetSymbol(), id.GetText(), argType.Identifier)
-
-					//add to members
-					members = append(members, variable)
-
-				}
-
-			}
-		}
-		// Add the function to the symbol table
-
-		isValidFnType := v.Table.isValidType(rtype.Identifier)
-		if !isValidFnType {
-			v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", rtype.Identifier))
-			v.ErrorListener.SyntaxError(nil, function.GetStart(), function.GetStart().GetLine(), function.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", rtype.Identifier), nil)
-
-		}
-		fn := v.Table.NewFun(function.FuncFrontDecl().IDENTIFIER().GetSymbol(), function.FuncFrontDecl().IDENTIFIER().GetText(), rtype.Identifier, members)
-		err := v.Table.AddElement(fn)
-		if err != nil {
-			v.ErrorList = append(v.ErrorList, err.Error())
-			v.ErrorListener.SyntaxError(nil, function.GetStart(), function.GetStart().GetLine(), function.GetStart().GetColumn(), err.Error(), nil)
-
-		}
-
-	}
-
-	vars := ctx.TopDeclarationList().AllTypeDecl()
+	vars := ctx.TopDeclarationList().AllVariableDecl()
 	for _, variable := range vars {
 		v.Visit(variable)
 
@@ -149,29 +150,117 @@ func (v *Checker) VisitSingleTypeDecl(ctx *parser.SingleTypeDeclContext) interfa
 
 func (v *Checker) VisitFuncDecl(ctx *parser.FuncDeclContext) interface{} {
 
-	funcName := ctx.FuncFrontDecl().IDENTIFIER().GetText()
-	val := v.Table.search(funcName)
-	if val == nil {
-		v.ErrorList = append(v.ErrorList, fmt.Sprintf("function '%s' already defined in the current scope", funcName))
-		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("function '%s' already defined in the current scope", funcName), nil)
+	funcFrontDecl := ctx.FuncFrontDecl()
+	rtype := DeclTypeInfo{
+		Identifier: "",
+		IsSlice:    false,
+		IsStruct:   false,
+		IsArray:    false,
+	}
+	//Get the return type of the function
+	returnType := funcFrontDecl.DeclType()
+	if returnType != nil {
+		rtype = v.Visit(returnType).(DeclTypeInfo)
 	}
 
+	// Save the arguments of the function
+	var members []*Identifier
+	if args := funcFrontDecl.FuncArgDecls(); args != nil {
+		for _, arg := range args.AllSingleVarDeclNoExps() {
+			argType := v.Visit(arg.DeclType()).(DeclTypeInfo)
+
+			ids := arg.IdentifierList().AllIDENTIFIER()
+			for _, id := range ids {
+
+				isValidType := v.Table.isValidType(argType.Identifier)
+				if !isValidType {
+					v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", argType.Identifier))
+					v.ErrorListener.SyntaxError(nil, arg.GetStart(), arg.GetStart().GetLine(), arg.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", argType.Identifier), nil)
+				}
+				variable := v.Table.NewVar(id.GetSymbol(), id.GetText(), argType.Identifier)
+
+				//add to members
+				members = append(members, variable)
+
+			}
+
+		}
+
+	}
+
+	isValidFnType := v.Table.isValidType(rtype.Identifier)
+	if !isValidFnType {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", rtype.Identifier))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", rtype.Identifier), nil)
+
+	}
+	fn := v.Table.NewFun(funcFrontDecl.IDENTIFIER().GetSymbol(), funcFrontDecl.IDENTIFIER().GetText(), rtype.Identifier, members)
+	err := v.Table.AddElement(fn)
+	if err != nil {
+		v.ErrorList = append(v.ErrorList, err.Error())
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), err.Error(), nil)
+	}
+
+	// Visit the block
 	v.Table.openScope()
 	v.Visit(ctx.Block())
 	v.Table.closeScope()
 
 	return nil
 }
+func ComputeFac(x int) {
+}
 
 func (v *Checker) VisitFuncFrontDecl(ctx *parser.FuncFrontDeclContext) interface{} {
-
+	// ----
+	rtype := DeclTypeInfo{
+		Identifier: "",
+		IsSlice:    false,
+		IsStruct:   false,
+		IsArray:    false,
+	}
+	returnType := ctx.DeclType()
+	if returnType != nil {
+		rtype = v.Visit(returnType).(DeclTypeInfo)
+	}
+	// -----
 	v.Table.openScope()
-	args := ctx.FuncArgDecls()
-	if args != nil {
-		v.Visit(args)
+	var members []*Identifier
+	if args := ctx.FuncArgDecls(); args != nil {
+		for _, arg := range args.AllSingleVarDeclNoExps() {
+			argType := v.Visit(arg.DeclType()).(DeclTypeInfo)
+
+			ids := arg.IdentifierList().AllIDENTIFIER()
+			for _, id := range ids {
+
+				isValidType := v.Table.isValidType(argType.Identifier)
+				if !isValidType {
+					v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", argType.Identifier))
+					v.ErrorListener.SyntaxError(nil, arg.GetStart(), arg.GetStart().GetLine(), arg.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", argType.Identifier), nil)
+				}
+				variable := v.Table.NewVar(id.GetSymbol(), id.GetText(), argType.Identifier)
+
+				//add to members
+				members = append(members, variable)
+
+			}
+
+		}
+	}
+	// Add the function to the symbol table
+
+	isValidFnType := v.Table.isValidType(rtype.Identifier)
+	if !isValidFnType {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' is not a valid type", rtype.Identifier))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("'%s' is not a valid type", rtype.Identifier), nil)
 	}
 
-	return nil
+	//args := ctx.FuncArgDecls()
+	//if args != nil {
+	//	v.Visit(args)
+	//}
+
+	return rtype
 }
 
 func (v *Checker) VisitFuncArgDecls(ctx *parser.FuncArgDeclsContext) interface{} {
@@ -213,11 +302,10 @@ func (v *Checker) VisitDeclType(ctx *parser.DeclTypeContext) interface{} {
 			res.IsSlice = true
 		}
 	case ctx.ArrayDeclType() != nil:
-		array := ctx.ArrayDeclType()
-		if ident := array.DeclType().IDENTIFIER(); ident != nil {
-			res.Identifier = ident.GetText()
-			res.IsArray = true
-		}
+		array := v.Visit(ctx.ArrayDeclType()).(*Identifier)
+		res.Identifier = array.LitType
+		res.IsArray = true
+
 	case ctx.StructDeclType() != nil:
 
 		structure := ctx.StructDeclType()
@@ -296,9 +384,9 @@ func (v *Checker) VisitVarDeclWithType(ctx *parser.VarDeclWithTypeContext) inter
 
 	for i, id := range identifiers {
 		exp := expressionList[i]
-		expType := v.Visit(exp)
-		if expType != idsType.Identifier {
-			v.ErrorList = append(v.ErrorList, fmt.Sprintf("variable '%s' has type %s, expected %s", id.GetText(), expType, idsType.Identifier))
+		expType := v.Visit(exp).(*Identifier)
+		if expType.LitType != idsType.Identifier {
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("variable '%s' has type %s, expected %s", id.GetText(), expType.LitType, idsType.Identifier))
 			v.ErrorListener.SyntaxError(nil, id.GetSymbol(), id.GetSymbol().GetLine(), id.GetSymbol().GetColumn(), fmt.Sprintf("variable '%s' has type %s, expected %s", id.GetText(), expType, idsType.Identifier), nil)
 		}
 		isValidType := v.Table.isValidType(idsType.Identifier)
@@ -367,11 +455,25 @@ func (v *Checker) VisitSliceDeclType(ctx *parser.SliceDeclTypeContext) interface
 }
 
 func (v *Checker) VisitArrayDeclType(ctx *parser.ArrayDeclTypeContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	id := v.Visit(ctx.DeclType()).(DeclTypeInfo)
+	//convert arraySize to int
+	arraySize, _ := strconv.Atoi(ctx.INT_LIT().GetText())
+
+	array := &Identifier{
+		Value:   id.Identifier,
+		Level:   v.Table.CurrentLevel,
+		LitType: id.Identifier,
+		Size:    arraySize,
+		list:    nil,
+	}
+
+	return array
 }
 
 func (v *Checker) VisitStructDeclType(ctx *parser.StructDeclTypeContext) interface{} {
-	newStruct := v.Table.NewStruct(ctx.GetStart(), "Str")
+
+	newStruct := v.Table.NewStruct(ctx.GetStart(), "struct")
 
 	members := ctx.StructMemDecls()
 	if members != nil {
@@ -417,8 +519,8 @@ func (v *Checker) VisitExpBinary(ctx *parser.ExpBinaryContext) interface{} {
 		leftResult := v.Visit(ctx.Expression(0)).(*Identifier)  // Visita la expresión izquierda
 		rightResult := v.Visit(ctx.Expression(1)).(*Identifier) // Visita la expresión derecha
 		if leftResult.LitType != rightResult.LitType {
-			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
-			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
+			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
 		}
 		return "bool"
 	}
@@ -426,15 +528,16 @@ func (v *Checker) VisitExpBinary(ctx *parser.ExpBinaryContext) interface{} {
 	if ctx.ADD() != nil || ctx.SUB() != nil || ctx.PIPE() != nil || ctx.CARET() != nil || ctx.AND() != nil || ctx.RSHIFT() != nil || ctx.LSHIFT() != nil || ctx.ANDNOT() != nil {
 		leftResult := v.Visit(ctx.Expression(0)).(*Identifier)  // Visita la expresión izquierda
 		rightResult := v.Visit(ctx.Expression(1)).(*Identifier) // Visita la expresión derecha
+
 		if leftResult.LitType != rightResult.LitType {
-			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
-			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
+			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, and %s has type %s", ctx.Expression(0).GetText(), leftResult.LitType, ctx.Expression(1).GetText(), rightResult.LitType), nil)
 		}
 
 		if leftResult == nil {
-			return rightResult.LitType
+			return rightResult
 		}
-		return leftResult.LitType
+		return leftResult
 	}
 
 	if ctx.MULT() != nil || ctx.DIV() != nil || ctx.MOD() != nil {
@@ -442,15 +545,15 @@ func (v *Checker) VisitExpBinary(ctx *parser.ExpBinaryContext) interface{} {
 		rightResult := v.Visit(ctx.Expression(1)).(*Identifier) // Visita la expresión derecha
 		if leftResult.LitType != rightResult.LitType {
 			//Display mismatch error message
-			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
-			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
+			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
 		}
 
 		if leftResult == nil {
-			return rightResult.LitType
+			return rightResult
 		}
 
-		return leftResult.LitType
+		return leftResult
 	}
 
 	if ctx.LOG_OR() != nil || ctx.LOG_AND() != nil {
@@ -458,7 +561,7 @@ func (v *Checker) VisitExpBinary(ctx *parser.ExpBinaryContext) interface{} {
 		rightResult := v.Visit(ctx.Expression(1)).(*Identifier) // Visita la expresión derecha
 		if leftResult.LitType != rightResult.LitType {
 			v.ErrorList = append(v.ErrorList, fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType))
-			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, expected %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
+			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("Mismatch error: '%s' has type %s, giving %s", leftResult.Value, leftResult.LitType, rightResult.LitType), nil)
 		}
 		return "bool"
 
@@ -498,16 +601,25 @@ func (v *Checker) VisitLenExp(ctx *parser.LenExpContext) interface{} {
 
 func (v *Checker) VisitSelectorExp(ctx *parser.SelectorExpContext) interface{} {
 
+	fmt.Println("Entrooooooo")
+	// Get the struct
+	structure := v.Visit(ctx.PrimaryExpression()).(*Identifier)
+	fmt.Println(structure.Value)
+
 	return v.VisitChildren(ctx)
 }
 
 func (v *Checker) VisitFuncCall(ctx *parser.FuncCallContext) interface{} {
 
 	function := v.Visit(ctx.PrimaryExpression()).(*Identifier)
+	arguments := v.Visit(ctx.Arguments().ExpressionList(0)).([]*Identifier)
 
-	expression := ctx.Arguments().ExpressionList(0)
-
-	arguments := v.Visit(expression).([]*Identifier)
+	//Check if the function exists
+	if function == nil {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("function '%s' not defined", ctx.PrimaryExpression().GetText()))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("function '%s' not defined", ctx.PrimaryExpression().GetText()), nil)
+		return nil
+	}
 
 	if len(arguments) != len(function.list) {
 		v.ErrorList = append(v.ErrorList, fmt.Sprintf("function '%s' expects %d arguments, %d given", function.Value, len(function.list), len(arguments)))
@@ -517,13 +629,14 @@ func (v *Checker) VisitFuncCall(ctx *parser.FuncCallContext) interface{} {
 	if len(arguments) <= len(function.list) {
 		for i, arg := range arguments {
 			if arg.LitType != function.list[i].LitType {
-				v.ErrorList = append(v.ErrorList, fmt.Sprintf("argument %d of function '%s' has type %d, expected %d", i, function.Value, arg.LitType, function.list[i].LitType))
-				v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("argument %d of function '%s' has type %d, expected %d", i, function.Value, arg.LitType, function.list[i].LitType), nil)
+				v.ErrorList = append(v.ErrorList, fmt.Sprintf("argument %d of function '%s' has type %s, expected %s", i, function.Value, arg.LitType, function.list[i].LitType))
+				v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("argument %d of function '%s' has type %s, expected %s", i, function.Value, arg.LitType, function.list[i].LitType), nil)
+
 			}
 		}
 	}
 
-	return v.VisitChildren(ctx)
+	return function
 }
 
 func (v *Checker) VisitOpExp(ctx *parser.OpExpContext) interface{} {
@@ -534,8 +647,11 @@ func (v *Checker) VisitIndexExp(ctx *parser.IndexExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *Checker) VisitOperand(ctx *parser.OperandContext) interface{} {
+func (v *Checker) VisitLiteralOp(ctx *parser.LiteralOpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
 
+func (v *Checker) VisitIdentifierOp(ctx *parser.IdentifierOpContext) interface{} {
 	if ctx.IDENTIFIER() != nil {
 		id := ctx.IDENTIFIER()
 		// Search the variable in the symbol table
@@ -550,24 +666,41 @@ func (v *Checker) VisitOperand(ctx *parser.OperandContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *Checker) VisitExpressionOp(ctx *parser.ExpressionOpContext) interface{} {
+
+	res := v.Visit(ctx.Expression())
+	return res
+}
+
 func (v *Checker) VisitIntLit(ctx *parser.IntLitContext) interface{} {
-	return "int"
+
+	return &Identifier{
+		LitType: "int",
+	}
 }
 
 func (v *Checker) VisitFloatLit(ctx *parser.FloatLitContext) interface{} {
-	return "float"
+	return &Identifier{
+		LitType: "float",
+	}
 }
 
 func (v *Checker) VisitRawStringLit(ctx *parser.RawStringLitContext) interface{} {
-	return "string"
+	return &Identifier{
+		LitType: "string",
+	}
 }
 
 func (v *Checker) VisitInterpretedStringLit(ctx *parser.InterpretedStringLitContext) interface{} {
-	return "string"
+	return &Identifier{
+		LitType: "string",
+	}
 }
 
 func (v *Checker) VisitRuneLit(ctx *parser.RuneLitContext) interface{} {
-	return "char"
+	return &Identifier{
+		LitType: "char",
+	}
 }
 
 func (v *Checker) VisitIndex(ctx *parser.IndexContext) interface{} {
@@ -580,19 +713,58 @@ func (v *Checker) VisitArguments(ctx *parser.ArgumentsContext) interface{} {
 
 func (v *Checker) VisitSelector(ctx *parser.SelectorContext) interface{} {
 
+	// Get the struct
+
 	return v.VisitChildren(ctx)
 }
 
 func (v *Checker) VisitAppendExpression(ctx *parser.AppendExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	sliceExpression := ctx.Expression(0)
+	valueExpression := ctx.Expression(1)
+
+	slice := v.Visit(sliceExpression).(*Identifier)
+	value := v.Visit(valueExpression).(*Identifier)
+
+	if slice.LitType != value.LitType {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("append expects %s, %s given", slice.LitType, value.LitType))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("append expects %s, %s given", slice.LitType, value.LitType), nil)
+	}
+
+	return slice
+
 }
 
 func (v *Checker) VisitLengthExpression(ctx *parser.LengthExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	fmt.Println("Entrando a length")
+	id := v.Visit(ctx.Expression()).(*Identifier)
+
+	if id.LitType != "string" && id.LitType != "array" && id.LitType != "slice" {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("len expects string, array or slice, %s given", id.LitType))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("len expects string, array or slice, %s given", id.LitType), nil)
+	}
+
+	return &Identifier{
+		LitType: "int",
+	}
 }
 
 func (v *Checker) VisitCapExpression(ctx *parser.CapExpressionContext) interface{} {
-	return v.VisitChildren(ctx)
+	expression := ctx.Expression()
+	id := v.Visit(expression).(*Identifier)
+
+	//Check if the expression is a slice or an array
+	if id.LitType != "slice" && id.LitType != "array" {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("cap expects slice or array, %s given", id.LitType))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("cap expects slice or array, %s given", id.LitType), nil)
+		return nil
+	}
+
+	return &Identifier{
+		LitType: "int",
+	}
+
 }
 
 func (v *Checker) VisitStatementList(ctx *parser.StatementListContext) interface{} {
@@ -677,15 +849,15 @@ func (v *Checker) VisitShortDecSt(ctx *parser.ShortDecStContext) interface{} {
 	for i, leftExp := range leftExpression {
 		exp := rightExpression[i]
 
-		r := v.Visit(exp).(string)
+		r := v.Visit(exp).(*Identifier)
 
-		variable := v.Table.NewVar(leftExp.GetStart(), leftExp.GetText(), r)
+		variable := v.Table.NewVar(leftExp.GetStart(), leftExp.GetText(), r.LitType)
 		err := v.Table.AddElement(variable)
 		if err != nil {
 			v.ErrorList = append(v.ErrorList, err.Error())
 			v.ErrorListener.SyntaxError(nil, leftExp.GetStart(), leftExp.GetStart().GetLine(), leftExp.GetStart().GetColumn(), err.Error(), nil)
 		}
-		if variable.LitType != r {
+		if variable.LitType != r.LitType {
 			v.ErrorList = append(v.ErrorList, fmt.Sprintf("variable '%s' has type %d, expected %d", leftExp.GetText(), variable.LitType, r))
 			v.ErrorListener.SyntaxError(nil, leftExp.GetStart(), leftExp.GetStart().GetLine(), leftExp.GetStart().GetColumn(), fmt.Sprintf("variable '%s' has type %d, expected %d", leftExp.GetText(), variable.LitType, r), nil)
 		}
@@ -704,7 +876,35 @@ func (v *Checker) VisitAssignSt(ctx *parser.AssignStContext) interface{} {
 }
 
 func (v *Checker) VisitAssignStat(ctx *parser.AssignStatContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	r := ctx.ExpressionList(1).AllExpression()
+	fmt.Printf("Right: %v\n", r)
+	l := ctx.ExpressionList(0).AllExpression()
+
+	if len(r) != len(l) {
+		v.ErrorList = append(v.ErrorList, "The number of expressions in the left and right side of the assignment must be the same")
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), "The number of expressions in the left and right side of the assignment must be the same", nil)
+		return nil
+	}
+
+	for i, leftExp := range l {
+		exp := r[i]
+
+		s := v.Visit(exp).(*Identifier)
+		variable := v.Table.search(leftExp.GetText())
+
+		if variable == nil {
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("variable '%s' not defined", leftExp.GetText()))
+			v.ErrorListener.SyntaxError(nil, leftExp.GetStart(), leftExp.GetStart().GetLine(), leftExp.GetStart().GetColumn(), fmt.Sprintf("variable '%s' not defined", leftExp.GetText()), nil)
+			return nil
+		}
+		if variable.LitType != s.LitType {
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("variable '%s' has type %s, expected %s", leftExp.GetText(), variable.LitType, s.LitType))
+			v.ErrorListener.SyntaxError(nil, leftExp.GetStart(), leftExp.GetStart().GetLine(), leftExp.GetStart().GetColumn(), fmt.Sprintf("variable '%s' has type %s, expected %s", leftExp.GetText(), variable.LitType, s.LitType), nil)
+		}
+	}
+
+	return nil
 }
 
 func (v *Checker) VisitSwitchSt(ctx *parser.SwitchStContext) interface{} {
@@ -752,71 +952,91 @@ func (v *Checker) VisitDefaultExp(ctx *parser.DefaultExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-//func (v *Checker) VisitBlockSt(ctx *parser.BlockStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
+func (v *Checker) VisitForSt(ctx *parser.ForStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
 
-//
-//func (v *Checker) VisitLoopSt(ctx *parser.LoopStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
+func (v *Checker) VisitWhileExprSt(ctx *parser.WhileExprStContext) interface{} {
 
-//
-//func (v *Checker) VisitExpSt(ctx *parser.ExpStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
+	expr := v.Visit(ctx.Expression()).(string)
 
-//
-//func (v *Checker) VisitAssignmentStatement(ctx *parser.AssignmentStatementContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
+	if expr != "bool" {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("while expects bool, %s given", expr))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("while expects bool, %s given", expr), nil)
+	}
+	block := ctx.Block()
+	return v.Visit(block)
+}
 
-//func (v *Checker) VisitIfElseIfSt(ctx *parser.IfElseIfStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitIfElseBlockSt(ctx *parser.IfElseBlockStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitIfSimpleSt(ctx *parser.IfSimpleStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitIfSimpleElseIfSt(ctx *parser.IfSimpleElseIfStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitIfSimpleElseBlockSt(ctx *parser.IfSimpleElseBlockStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitForSt(ctx *parser.ForStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitWhileExprSt(ctx *parser.WhileExprStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitForExprSt(ctx *parser.ForExprStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitOtherForSt(ctx *parser.OtherForStContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
-//func (v *Checker) VisitSwitch(ctx *parser.SwitchContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
-//
+func (v *Checker) VisitOtherForSt(ctx *parser.OtherForStContext) interface{} {
 
-//
-//func (v *Checker) VisitExpressionSwitchCase(ctx *parser.ExpressionSwitchCaseContext) interface{} {
-//	return v.VisitChildren(ctx)
-//}
+	// Get Both Simple Statements
+	simpleSt1 := ctx.SimpleStatement(0)
+	simpleSt2 := ctx.SimpleStatement(1)
+	// Get Expr
+	expr := ctx.Expression()
+
+	//Visit Both Simple Statements
+	v.Visit(simpleSt1)
+	v.Visit(simpleSt2)
+
+	//Visit Expression for get the type
+	t := v.Visit(expr).(string)
+	fmt.Printf("Type: %s\n", t)
+	if t != "bool" {
+		v.ErrorList = append(v.ErrorList, fmt.Sprintf("for expects bool, %s given", t))
+		v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("for expects bool, %s given", t), nil)
+	}
+
+	block := ctx.Block()
+
+	return v.Visit(block)
+}
+
+func (v *Checker) VisitBlockSt(ctx *parser.BlockStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitLoopSt(ctx *parser.LoopStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitExpSt(ctx *parser.ExpStContext) interface{} {
+
+	if ctx.DECREMENT() != nil || ctx.INCREMENT() != nil {
+		expr := ctx.Expression()
+		id := v.Visit(expr).(*Identifier)
+		if id.LitType != "int" {
+			v.ErrorList = append(v.ErrorList, fmt.Sprintf("'%s' has type %s, expected int", id.Value, id.LitType))
+			v.ErrorListener.SyntaxError(nil, ctx.GetStart(), ctx.GetStart().GetLine(), ctx.GetStart().GetColumn(), fmt.Sprintf("'%s' has type %s, expected int", id.Value, id.LitType), nil)
+
+		}
+		return nil
+	}
+
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitAssignmentStatement(ctx *parser.AssignmentStatementContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitIfElseIfSt(ctx *parser.IfElseIfStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitIfElseBlockSt(ctx *parser.IfElseBlockStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitIfSimpleSt(ctx *parser.IfSimpleStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitIfSimpleElseIfSt(ctx *parser.IfSimpleElseIfStContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Checker) VisitIfSimpleElseBlockSt(ctx *parser.IfSimpleElseBlockStContext) interface{} {
+	return v.VisitChildren(ctx)
+}

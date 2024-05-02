@@ -3,13 +3,15 @@ package main
 import (
 	"MiniGolang/checker"
 	"MiniGolang/parser"
+	"MiniGolang/routes"
+	"fmt"
 	"github.com/antlr4-go/antlr/v4"
 )
 
 func main() {
 
-	//routes.Run()
-	testParser()
+	routes.Run()
+	//testParser()
 	//testLexer()
 }
 
@@ -34,13 +36,7 @@ func testParser() {
 
 	}
 
-	//c.Table.Print()
-
-	//print errorlist
-	//for _, err := range c.ErrorList {
-	//	println(err)
-	//
-	//}
+	fmt.Println(c.Table.AvailableTypes)
 
 }
 

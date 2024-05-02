@@ -10,8 +10,6 @@ root : PACKAGE IDENTIFIER SEMICOLON topDeclarationList;
 
 topDeclarationList : (variableDecl | typeDecl | funcDecl)*;
 
-//variableDecl : VAR (singleVarDecl | LPAREN innerVarDecls? RPAREN) SEMICOLON ;
-
 variableDecl: VAR singleVarDecl SEMICOLON                #varDecl
             | VAR LPAREN innerVarDecls RPAREN SEMICOLON  #mVarDecl
             | VAR LPAREN RPAREN SEMICOLON                #voidVarDecl
@@ -39,13 +37,7 @@ singleTypeDecl : IDENTIFIER declType ;
 
 funcDecl: funcFrontDecl block SEMICOLON;
 
-//Alternative for function declaration
-//funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls? RPAREN declType?;
-funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls RPAREN declType
-              | FUNCTION IDENTIFIER LPAREN funcArgDecls RPAREN
-              | FUNCTION IDENTIFIER LPAREN RPAREN declType
-              | FUNCTION IDENTIFIER LPAREN RPAREN
-              | FUNCTION IDENTIFIER declType ;
+funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls? RPAREN declType?;
 
 
 funcArgDecls : (singleVarDeclNoExps COMMA)* singleVarDeclNoExps ;
@@ -79,9 +71,10 @@ primaryExpression : operand #opExp
 			| lengthExpression #lenExp
 			| capExpression  #capExp
             ;
-operand	: literal									
-		| IDENTIFIER 
-		| LPAREN expression RPAREN;
+operand	: literal #literalOp
+		| IDENTIFIER #identifierOp
+		| LPAREN expression RPAREN #expressionOp
+		;
 
 literal :
           INT_LIT #intLit
@@ -140,11 +133,11 @@ ifStatement : IF expression block #ifSt
             | IF simpleStatement SEMICOLON expression block ELSE block #ifSimpleElseBlockSt
             ;
 
-loop : FOR block #forSt
-     | FOR expression block #whileExprSt
-     | FOR simpleStatement SEMICOLON expression SEMICOLON simpleStatement block #forExprSt
-     | FOR simpleStatement SEMICOLON SEMICOLON simpleStatement block #otherForSt
-     ;
+
+loop: FOR block #forSt
+    | FOR expression block #whileExprSt
+    | FOR simpleStatement SEMICOLON expression? SEMICOLON simpleStatement block #otherForSt
+    ;
 
 
 switch

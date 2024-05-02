@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"MiniGolang/checker"
 	"MiniGolang/parser"
 	"fmt"
 	"github.com/antlr4-go/antlr/v4"
@@ -50,7 +51,10 @@ func parseString(code string) []parser.SyntaxErrorInformation {
 	p := parser.Newexpr_parser(stream)
 	errorListener := &parser.CustomErrorListener{}
 	p.AddErrorListener(errorListener)
-	p.Root()
+	// Add Type Checker
+	tree := p.Root()
+	c := checker.NewChecker(errorListener)
+	c.Visit(tree)
 
 	if errorListener.Errors == nil {
 		return nil

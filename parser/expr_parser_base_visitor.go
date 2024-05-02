@@ -148,7 +148,15 @@ func (v *Baseexpr_parserVisitor) VisitIndexExp(ctx *IndexExpContext) interface{}
 	return v.VisitChildren(ctx)
 }
 
-func (v *Baseexpr_parserVisitor) VisitOperand(ctx *OperandContext) interface{} {
+func (v *Baseexpr_parserVisitor) VisitLiteralOp(ctx *LiteralOpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitIdentifierOp(ctx *IdentifierOpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitExpressionOp(ctx *ExpressionOpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -301,10 +309,6 @@ func (v *Baseexpr_parserVisitor) VisitForSt(ctx *ForStContext) interface{} {
 }
 
 func (v *Baseexpr_parserVisitor) VisitWhileExprSt(ctx *WhileExprStContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *Baseexpr_parserVisitor) VisitForExprSt(ctx *ForExprStContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

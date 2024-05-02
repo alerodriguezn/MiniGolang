@@ -1,9 +1,23 @@
 package main;
 
-func ComputeFac() int {
-    x := 10;
 
+type hola struct{
+    x int;
+};
+
+func ejemplo2(x int) int {
+
+    var registro hola;
     var x int = 10;
+    if x > 9 {
+        print("Hola");
+        if x > 10 {
+            print("Hola");
+        } else {
+            print("Adios");
+        };
+
+    };
 
 };
 

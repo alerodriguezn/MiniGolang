@@ -113,8 +113,14 @@ type expr_parserVisitor interface {
 	// Visit a parse tree produced by expr_parser#indexExp.
 	VisitIndexExp(ctx *IndexExpContext) interface{}
 
-	// Visit a parse tree produced by expr_parser#operand.
-	VisitOperand(ctx *OperandContext) interface{}
+	// Visit a parse tree produced by expr_parser#literalOp.
+	VisitLiteralOp(ctx *LiteralOpContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#identifierOp.
+	VisitIdentifierOp(ctx *IdentifierOpContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#expressionOp.
+	VisitExpressionOp(ctx *ExpressionOpContext) interface{}
 
 	// Visit a parse tree produced by expr_parser#intLit.
 	VisitIntLit(ctx *IntLitContext) interface{}
@@ -229,9 +235,6 @@ type expr_parserVisitor interface {
 
 	// Visit a parse tree produced by expr_parser#whileExprSt.
 	VisitWhileExprSt(ctx *WhileExprStContext) interface{}
-
-	// Visit a parse tree produced by expr_parser#forExprSt.
-	VisitForExprSt(ctx *ForExprStContext) interface{}
 
 	// Visit a parse tree produced by expr_parser#otherForSt.
 	VisitOtherForSt(ctx *OtherForStContext) interface{}
