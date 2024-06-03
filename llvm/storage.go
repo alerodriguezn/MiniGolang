@@ -59,6 +59,14 @@ func (m *moduleStorage) getElement(name string) (*moduleElement, bool) {
 	return nil, false
 }
 
+
+func (m *moduleStorage) Print() {
+	for _, element := range m.Elements {
+		println(element.Name)
+	}
+
+}
+
 type moduleElement struct {
 	Name  string
 	Scope int

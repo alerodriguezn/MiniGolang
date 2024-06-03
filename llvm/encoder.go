@@ -7,6 +7,7 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"strconv"
@@ -17,9 +18,10 @@ type Encoder struct {
 	symbolTable   *checker.SymbolTable
 	modStorage    *moduleStorage
 	//llvm ir
-	blocks    *Stack[*ir.Block]
-	functions *Stack[*Func]
-	module    *ir.Module
+	blocks     *Stack[*ir.Block]
+	forStorage *Stack[*ir.Block]
+	functions  *Stack[*Func]
+	module     *ir.Module
 
 	*parser.Baseexpr_parserVisitor
 }
@@ -46,6 +48,7 @@ func NewEncoder(listener *parser.CustomErrorListener) *Encoder {
 		modStorage:             newModuleStorage(),
 		blocks:                 CreateStack[*ir.Block](),
 		functions:              CreateStack[*Func](),
+		forStorage:             CreateStack[*ir.Block](),
 		Baseexpr_parserVisitor: &parser.Baseexpr_parserVisitor{},
 	}
 
@@ -441,6 +444,19 @@ func (v *Encoder) VisitExpBinary(ctx *parser.ExpBinaryContext) interface{} {
 		return bl.NewSRem(leftExp, rightExp)
 	case ctx.ADD() != nil:
 		return bl.NewAdd(leftExp, rightExp)
+	// Comparison operators
+	case ctx.EQUALS() != nil:
+		return bl.NewICmp(enum.IPredEQ, leftExp, rightExp)
+	case ctx.NOT_EQ() != nil:
+		return bl.NewICmp(enum.IPredNE, leftExp, rightExp)
+	case ctx.GREATER_THAN() != nil:
+		return bl.NewICmp(enum.IPredSGT, leftExp, rightExp)
+	case ctx.LESS_THAN() != nil:
+		return bl.NewICmp(enum.IPredSLT, leftExp, rightExp)
+	case ctx.GREATER_THAN_OR_EQUALS() != nil:
+		return bl.NewICmp(enum.IPredSGE, leftExp, rightExp)
+	case ctx.LESS_THAN_OR_EQUALS() != nil:
+		return bl.NewICmp(enum.IPredSLE, leftExp, rightExp)
 	default:
 		return nil
 	}
@@ -461,15 +477,43 @@ func (v *Encoder) VisitAppendExp(ctx *parser.AppendExpContext) interface{} {
 }
 
 func (v *Encoder) VisitLenExp(ctx *parser.LenExpContext) interface{} {
+
 	return v.VisitChildren(ctx)
 }
 
 func (v *Encoder) VisitSelectorExp(ctx *parser.SelectorExpContext) interface{} {
+
 	return v.VisitChildren(ctx)
 }
 
 func (v *Encoder) VisitFuncCall(ctx *parser.FuncCallContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	bl, _ := v.blocks.Peek()
+
+	var arguments []value.Value
+	pExp := v.Visit(ctx.PrimaryExpression()).(value.Named)
+
+	if e := ctx.Arguments().ExpressionList(); e != nil {
+
+		for _, exp := range e.AllExpression() {
+			arg := v.Visit(exp).(value.Value)
+
+			switch arg := arg.(type) {
+			case constant.Constant:
+				arguments = append(arguments, arg)
+			case *ir.InstAlloca:
+				loader := bl.NewLoad(arg.ElemType, arg)
+				arguments = append(arguments, loader)
+			case *ir.Global:
+				getEl := bl.NewGetElementPtr(types.I8, arg, constant.NewInt(types.I64, 0))
+				arguments = append(arguments, getEl)
+			}
+
+		}
+
+	}
+
+	return bl.NewCall(pExp, arguments...)
 }
 
 func (v *Encoder) VisitOpExp(ctx *parser.OpExpContext) interface{} {
@@ -511,7 +555,8 @@ func (v *Encoder) VisitIdentifierOp(ctx *parser.IdentifierOpContext) interface{}
 }
 
 func (v *Encoder) VisitExpressionOp(ctx *parser.ExpressionOpContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	return v.Visit(ctx.Expression())
 }
 
 func (v *Encoder) VisitIntLit(ctx *parser.IntLitContext) interface{} {
@@ -528,11 +573,20 @@ func (v *Encoder) VisitFloatLit(ctx *parser.FloatLitContext) interface{} {
 }
 
 func (v *Encoder) VisitRawStringLit(ctx *parser.RawStringLitContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	str := ctx.RAW_STRING_LIT().GetText()
+
+	return v.module.NewGlobalDef("", constant.NewCharArrayFromString(str))
+
 }
 
 func (v *Encoder) VisitInterpretedStringLit(ctx *parser.InterpretedStringLitContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	str := ctx.GetText()
+	//delete the quotes
+	str = str[1 : len(str)-1]
+	newConstant := constant.NewCharArrayFromString(str)
+	return v.module.NewGlobalDef("", newConstant)
 }
 
 func (v *Encoder) VisitRuneLit(ctx *parser.RuneLitContext) interface{} {
@@ -560,7 +614,17 @@ func (v *Encoder) VisitAppendExpression(ctx *parser.AppendExpressionContext) int
 
 func (v *Encoder) VisitLengthExpression(ctx *parser.LengthExpressionContext) interface{} {
 
-	return v.VisitChildren(ctx)
+	expression := v.Visit(ctx.Expression()).(value.Value)
+
+	if instAlloca, ok := expression.(*ir.InstAlloca); ok {
+		if arrayType, ok := instAlloca.ElemType.(*types.ArrayType); ok {
+			return constant.NewInt(types.I64, int64(arrayType.Len))
+		}
+	} else {
+		fmt.Println("Error in LengthExpression")
+	}
+
+	return nil
 }
 
 func (v *Encoder) VisitCapExpression(ctx *parser.CapExpressionContext) interface{} {
@@ -607,6 +671,10 @@ func (v *Encoder) VisitPrintlnSt(ctx *parser.PrintlnStContext) interface{} {
 				formatStrPtr := bl.NewBitCast(strInt, types.I8Ptr)
 				bl.NewCall(printf, formatStrPtr, exp)
 
+			case *ir.Global:
+				expPtr := bl.NewBitCast(exp, types.I8Ptr)
+				bl.NewCall(puts, expPtr)
+
 			case *ir.InstGetElementPtr:
 				//array case
 				if types.IsArray(e.ElemType) {
@@ -614,6 +682,7 @@ func (v *Encoder) VisitPrintlnSt(ctx *parser.PrintlnStContext) interface{} {
 					formatStrPtr := bl.NewBitCast(strInt, types.I8Ptr)
 					bl.NewCall(printf, formatStrPtr, loader)
 				} else {
+
 					bl.NewCall(puts, exp)
 				}
 
@@ -641,27 +710,30 @@ func (v *Encoder) VisitReturnSt(ctx *parser.ReturnStContext) interface{} {
 	// Case when we are in the main function
 	if peekFn.Name() == "main" {
 		v.blocks.Push(k)
-		peekBlock.NewRet(nil)
+		return newBlock.NewRet(nil)
 	}
 
 	if expr := ctx.Expression(); expr != nil {
 		expr := v.Visit(expr).(value.Value)
-		//check if the expression is a pointer
-		if types.IsPointer(expr.Type()) {
-			v.blocks.Push(k)
-			//load the value
-			load := newBlock.NewLoad(peekFn.Sig.RetType, expr)
-			//return the value
-			return newBlock.NewRet(load)
 
+		switch exp := expr.(type) {
+		case constant.Constant:
+			return newBlock.NewRet(exp)
+		case *ir.InstAlloca:
+			loader := peekBlock.NewLoad(exp.ElemType, expr)
+			return newBlock.NewRet(loader)
+		case *ir.Global:
+			ptr := peekBlock.NewGetElementPtr(exp.ContentType, exp, constant.NewInt(types.I64, 0))
+			return newBlock.NewRet(ptr)
+		case *ir.InstGetElementPtr:
+			return newBlock.NewRet(exp)
+		case *ir.InstCall:
+			return newBlock.NewRet(exp)
 		}
-
-		v.blocks.Push(k)
-		return newBlock.NewRet(expr)
 
 	}
 
-	return newBlock.NewRet(nil)
+	return nil
 }
 
 func (v *Encoder) VisitBreakSt(ctx *parser.BreakStContext) interface{} {
@@ -687,11 +759,81 @@ func (v *Encoder) VisitIfStat(ctx *parser.IfStatContext) interface{} {
 
 func (v *Encoder) VisitIfSt(ctx *parser.IfStContext) interface{} {
 
-	return v.VisitChildren(ctx)
+	//
+	function, _ := v.functions.Peek()
+	bl, _ := v.blocks.Peek()
+
+	expression := v.Visit(ctx.Expression()).(value.Value)
+
+	//create a new block
+	entry := function.NewBlock("")
+	v.blocks.Push(entry)
+
+	//visit the context block
+	v.Visit(ctx.Block())
+
+	//Pop the block
+	last, _ := v.blocks.Pop()
+
+	//end Block
+	endBl := function.NewBlock("")
+	//check if it is terminal
+	isTerminal := last.Term
+	if isTerminal == nil && last != nil {
+		entry.NewBr(endBl)
+	}
+
+	//create a new br
+	bl.NewCondBr(expression, entry, endBl)
+
+	//push the end block
+	isTerminalEntry := entry.Term
+	if isTerminalEntry == nil {
+		entry.NewBr(endBl)
+	}
+
+	v.blocks.Push(endBl)
+
+	return nil
 }
 
 func (v *Encoder) VisitShortDecSt(ctx *parser.ShortDecStContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	function, _ := v.functions.Peek()
+	bl, _ := v.blocks.Peek()
+
+	firstExpList := ctx.ExpressionList(0)
+	secondExpList := ctx.ExpressionList(1)
+
+	for i, expr := range firstExpList.AllExpression() {
+		idName := expr.GetText()
+
+		e := v.Visit(secondExpList.Expression(i)).(value.Value)
+
+		switch val := e.(type) {
+		case constant.Constant:
+			newAlloc := function.body.NewAlloca(e.Type())
+			bl.NewStore(e, newAlloc)
+			v.modStorage.addElement(idName, newAlloc)
+		case *ir.InstAlloca:
+			loader := bl.NewLoad(val.ElemType, e)
+			newAlloc := function.body.NewAlloca(val.ElemType)
+			bl.NewStore(loader, newAlloc)
+			v.modStorage.addElement(idName, newAlloc)
+		case *ir.Global:
+			alloc := function.body.NewAlloca(val.Type())
+			loader := bl.NewLoad(val.Type(), val)
+			bl.NewStore(loader, alloc)
+			v.modStorage.addElement(idName, alloc)
+		case *ir.InstCall:
+			alloc := function.body.NewAlloca(val.Type())
+			bl.NewStore(val, alloc)
+			v.modStorage.addElement(idName, alloc)
+		}
+
+	}
+
+	return nil
 }
 
 func (v *Encoder) VisitTypeDeclSt(ctx *parser.TypeDeclStContext) interface{} {
@@ -723,6 +865,8 @@ func (v *Encoder) VisitAssignStat(ctx *parser.AssignStatContext) interface{} {
 		case *ir.InstAlloca:
 			loader := bl.NewLoad(expression.ElemType, expression)
 			bl.NewStore(loader, element)
+		case *ir.InstCall:
+			bl.NewStore(expression, element)
 		// Case when the expression is a result of an operation (Add, Sub, Mul, Div)
 		case *ir.InstMul, *ir.InstFAdd, *ir.InstFSub, *ir.InstFMul, *ir.InstFDiv, *ir.InstSRem, *ir.InstAdd, *ir.InstSDiv, *ir.InstSub, *ir.InstFRem:
 			if types.IsPointer(expression.Type()) {
@@ -793,11 +937,83 @@ func (v *Encoder) VisitForSt(ctx *parser.ForStContext) interface{} {
 
 func (v *Encoder) VisitWhileExprSt(ctx *parser.WhileExprStContext) interface{} {
 
-	return v.VisitChildren(ctx)
+	function, _ := v.functions.Peek()
+	bl, _ := v.blocks.Peek()
+
+	// entry and end blocks
+	loop := function.NewBlock("")
+	closeBl := function.NewBlock("")
+
+	// Jump to the loop
+	bl.NewBr(loop)
+
+	v.blocks.Push(loop)
+	v.forStorage.Push(closeBl)
+
+	// Visit the block
+	v.Visit(ctx.Block())
+
+	_, _ = v.forStorage.Pop()
+
+	//visit expression
+	expression := v.Visit(ctx.Expression()).(value.Value)
+
+	lb, _ := v.blocks.Peek()
+	isTerm := lb.Term
+	if isTerm == nil {
+		lb.NewCondBr(expression, loop, closeBl)
+
+	}
+
+	closeBl.Parent = function.Func
+	function.Blocks = append(function.Blocks, closeBl)
+	v.blocks.Push(closeBl)
+
+	return nil
+
 }
 
 func (v *Encoder) VisitOtherForSt(ctx *parser.OtherForStContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	function, _ := v.functions.Peek()
+	bl, _ := v.blocks.Peek()
+
+	// Get the simple statements
+	simpleStatement1 := ctx.SimpleStatement(0)
+	simpleStatement2 := ctx.SimpleStatement(1)
+	v.Visit(simpleStatement1)
+
+	// entry and end blocks
+	loop := function.NewBlock("")
+	closeBl := function.NewBlock("")
+
+	// Jump to the loop
+	bl.NewBr(loop)
+
+	v.blocks.Push(loop)
+	v.forStorage.Push(closeBl)
+
+	// Visit the block
+	v.Visit(ctx.Block())
+	v.Visit(simpleStatement2)
+	_, _ = v.forStorage.Pop()
+
+	//visit expression
+	expression := v.Visit(ctx.Expression()).(value.Value)
+
+	//get Last block
+	lastBl, _ := v.blocks.Peek()
+	isTerm := lastBl.Term
+	if isTerm == nil {
+		lastBl.NewCondBr(expression, loop, closeBl)
+	}
+	//  set the parent of the close block (Connection)
+
+	closeBl.Parent = function.Func
+	function.Blocks = append(function.Blocks, closeBl)
+	v.blocks.Push(closeBl)
+
+	return nil
 }
 
 func (v *Encoder) VisitBlockSt(ctx *parser.BlockStContext) interface{} {
@@ -821,7 +1037,56 @@ func (v *Encoder) VisitIfElseIfSt(ctx *parser.IfElseIfStContext) interface{} {
 }
 
 func (v *Encoder) VisitIfElseBlockSt(ctx *parser.IfElseBlockStContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	function, _ := v.functions.Peek()
+	bl, _ := v.blocks.Peek()
+
+	expression := v.Visit(ctx.Expression()).(value.Value)
+
+	// ================================== IF PART =========================
+	entry := function.NewBlock("")
+	v.blocks.Push(entry)
+	// visit the first block
+	v.Visit(ctx.Block(0))
+	firstBl, _ := v.blocks.Pop()
+
+	// ================================== ELSE PART =========================
+
+	elseEntry := function.NewBlock("")
+	v.blocks.Push(elseEntry)
+	// visit the second block
+	v.Visit(ctx.Block(1))
+	last := function.NewBlock("")
+	//check if the first block is terminal
+	isTerminal := firstBl.Term
+	if isTerminal == nil && firstBl != nil {
+		entry.NewBr(last)
+	}
+	// ================================== Check Terms =========================
+
+	//check if the second block is terminal
+	isTerminalElse := elseEntry.Term
+	if isTerminalElse == nil && elseEntry != nil {
+		elseEntry.NewBr(last)
+	}
+
+	bl.NewCondBr(expression, entry, elseEntry)
+
+	//check if the entry block is terminal
+	isTerminalEntry := entry.Term
+	if isTerminalEntry == nil {
+		entry.NewBr(last)
+	}
+
+	if elseEntry.Term == nil {
+		elseEntry.NewBr(last)
+	}
+
+	// push the last block
+
+	v.blocks.Push(last)
+
+	return nil
 }
 
 func (v *Encoder) VisitIfSimpleSt(ctx *parser.IfSimpleStContext) interface{} {

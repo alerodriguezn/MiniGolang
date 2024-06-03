@@ -26,7 +26,7 @@ func parseCode(rg *gin.RouterGroup) {
 			return
 		}
 
-		errors, data := parseString(code.Code)
+		errors, data, mod := parseString(code.Code)
 
 		if errors != nil {
 			totalErrors := len(errors)
@@ -34,13 +34,14 @@ func parseCode(rg *gin.RouterGroup) {
 				"message": fmt.Sprintf("Compilation failed! %d Errors found. ⚠️", totalErrors),
 				"errors":  errors,
 				"output":  data,
+				"ll":      mod,
 			})
 			return
 		}
 
 		fmt.Println("Output2: ", data)
 
-		c.JSON(200, gin.H{"message": "Compiled successfully! 0 errors found. ✅", "output": data})
+		c.JSON(200, gin.H{"message": "Compiled successfully! 0 errors found. ✅", "output": data, "ll": mod})
 
 	})
 
@@ -50,7 +51,7 @@ type Output struct {
 	Stdout string `json:"stdout"`
 }
 
-func parseString(code string) ([]parser.SyntaxErrorInformation, string) {
+func parseString(code string) ([]parser.SyntaxErrorInformation, string, string) {
 
 	input := antlr.NewInputStream(code)
 	lexer := parser.Newexpr_lexer(input)
@@ -121,6 +122,6 @@ func parseString(code string) ([]parser.SyntaxErrorInformation, string) {
 
 	//fmt.Println("Output: ", outputData.Stdout)
 
-	return errorListener.Errors, outputData.Stdout
+	return errorListener.Errors, outputData.Stdout, mod.String()
 
 }

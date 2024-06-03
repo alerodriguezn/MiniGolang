@@ -86,7 +86,7 @@ literal :
 
 index : LBRACK expression RBRACK ;
 
-arguments : LPAREN expressionList* RPAREN ;
+arguments : LPAREN expressionList? RPAREN ;
 
 selector : DOT IDENTIFIER ;
 

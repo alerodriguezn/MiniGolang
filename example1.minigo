@@ -1,19 +1,15 @@
 package main;
 
-func main() {
+func suma () int {
+    var x int;
 
-    var arr [5]int;
-    var x = 10;
+}
 
-    arr[0] = 19;
-
-    x = arr[0] + 2;
-
-
-    println(x);
-
+func main()  {
     return;
 
 };
+
+
 
 
