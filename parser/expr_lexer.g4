@@ -147,3 +147,5 @@ STRING_LIT : RAW_STRING_LIT | INTERPRETED_STRING_LIT;
 // ---------- Others   -----------------------
 
 WS  :   [ \t\n\r]+ -> skip ;
+COMMENT: '//' ~('\n'|'\r')* '\r'? '\n' -> skip;
+MULT_COMMENT: '/*'.*?'*/' -> skip;

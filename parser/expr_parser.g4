@@ -18,8 +18,8 @@ variableDecl: VAR singleVarDecl SEMICOLON                #varDecl
 innerVarDecls: singleVarDecl SEMICOLON (singleVarDecl SEMICOLON)*;
 
 
-singleVarDecl : identifierList declType ASSIGN expressionList #varDeclWithType
-			| identifierList ASSIGN expressionList #varDeclWithoutType
+singleVarDecl : identifierList ASSIGN expressionList #varDeclWithoutType
+			| identifierList declType ASSIGN expressionList #varDeclWithType
 			| singleVarDeclNoExps #varDeclNoExp
 			;
 
@@ -42,12 +42,12 @@ funcFrontDecl : FUNCTION IDENTIFIER LPAREN funcArgDecls? RPAREN declType?;
 
 funcArgDecls : (singleVarDeclNoExps COMMA)* singleVarDeclNoExps ;
 
-declType : LPAREN declType RPAREN
-         | IDENTIFIER 
-         | sliceDeclType
-         | arrayDeclType
-         | structDeclType
-         |  ;
+declType : LPAREN declType RPAREN #nestedDeclType
+         | IDENTIFIER #idDeclType
+         | sliceDeclType #sliceDecType
+         | arrayDeclType #arrayDecType
+         | structDeclType #structDecType
+         ;
 
 sliceDeclType : LBRACK RBRACK declType ;
 arrayDeclType : LBRACK INT_LIT RBRACK declType ;

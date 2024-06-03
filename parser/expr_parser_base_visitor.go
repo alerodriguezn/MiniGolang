@@ -32,11 +32,11 @@ func (v *Baseexpr_parserVisitor) VisitInnerVarDecls(ctx *InnerVarDeclsContext) i
 	return v.VisitChildren(ctx)
 }
 
-func (v *Baseexpr_parserVisitor) VisitVarDeclWithType(ctx *VarDeclWithTypeContext) interface{} {
+func (v *Baseexpr_parserVisitor) VisitVarDeclWithoutType(ctx *VarDeclWithoutTypeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *Baseexpr_parserVisitor) VisitVarDeclWithoutType(ctx *VarDeclWithoutTypeContext) interface{} {
+func (v *Baseexpr_parserVisitor) VisitVarDeclWithType(ctx *VarDeclWithTypeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -80,7 +80,23 @@ func (v *Baseexpr_parserVisitor) VisitFuncArgDecls(ctx *FuncArgDeclsContext) int
 	return v.VisitChildren(ctx)
 }
 
-func (v *Baseexpr_parserVisitor) VisitDeclType(ctx *DeclTypeContext) interface{} {
+func (v *Baseexpr_parserVisitor) VisitNestedDeclType(ctx *NestedDeclTypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitIdDeclType(ctx *IdDeclTypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitSliceDecType(ctx *SliceDecTypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitArrayDecType(ctx *ArrayDecTypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *Baseexpr_parserVisitor) VisitStructDecType(ctx *StructDecTypeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

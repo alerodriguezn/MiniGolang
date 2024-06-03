@@ -3,6 +3,7 @@ package checker
 import (
 	"fmt"
 	"github.com/antlr4-go/antlr/v4"
+	"github.com/llir/llvm/ir/types"
 )
 
 type idType int
@@ -18,7 +19,7 @@ const (
 
 type Identifier struct {
 	Token      antlr.Token
-	Type       idType
+	TypeId       idType
 	LitType    string
 	Value      interface{}
 	Level      int
@@ -26,8 +27,24 @@ type Identifier struct {
 	isSlice    bool
 	isStruct   bool
 	isArray    bool
-	Size 	 int
-	list       []*Identifier
+	Size       int
+	list  []*Identifier
+	LType types.Type
+}
+
+func (i Identifier) String() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (i Identifier) Type() types.Type {
+	//TODO implement me
+	return i.LType
+}
+
+func (i Identifier) Ident() string {
+	//TODO implement me
+	panic("implement me")
 }
 
 type SymbolTable struct {
@@ -105,9 +122,18 @@ func (s *SymbolTable) Print() {
 	}
 }
 
+func (s *SymbolTable) GetElement(token string) *Identifier {
+	for _, element := range s.Elements {
+		if element.Value == token {
+			return &element
+		}
+	}
+	return nil
+}
+
 func (s *SymbolTable) getCurrentFunction() *Identifier {
 	for _, element := range s.Elements {
-		if element.Type == funId {
+		if element.TypeId == funId {
 			return &element
 		}
 	}
@@ -117,7 +143,7 @@ func (s *SymbolTable) getCurrentFunction() *Identifier {
 func (s *SymbolTable) NewVar(token antlr.Token, value string, typ string) *Identifier {
 	return &Identifier{
 		Token:   token,
-		Type:    varId,
+		TypeId:    varId,
 		Value:   value,
 		LitType: typ,
 		Level:   s.CurrentLevel,
@@ -128,7 +154,7 @@ func (s *SymbolTable) NewVar(token antlr.Token, value string, typ string) *Ident
 func (s *SymbolTable) NewType(token antlr.Token, value string, typ string, isSlice bool) *Identifier {
 	return &Identifier{
 		Token:   token,
-		Type:    typeId,
+		TypeId:    typeId,
 		Value:   value,
 		Level:   s.CurrentLevel,
 		LitType: typ,
@@ -142,7 +168,7 @@ func (s *SymbolTable) NewType(token antlr.Token, value string, typ string, isSli
 func (s *SymbolTable) NewFun(token antlr.Token, value string, typ string, list []*Identifier) *Identifier {
 	return &Identifier{
 		Token:   token,
-		Type:    funId,
+		TypeId:    funId,
 		Value:   value,
 		Level:   s.CurrentLevel,
 		LitType: typ,
@@ -161,7 +187,7 @@ func (s *SymbolTable) NewStruct(token antlr.Token, value string, optionalLists .
 
 	return &Identifier{
 		Token:    token,
-		Type:     typeId,
+		TypeId:     typeId,
 		Value:    value,
 		Level:    s.CurrentLevel,
 		LitType:  "",
@@ -175,13 +201,13 @@ func (s *SymbolTable) AddElement(element *Identifier) error {
 
 	for _, e := range s.Elements {
 		if e.Value == element.Value {
-			if e.Type == funId && e.Level == element.Level {
+			if e.TypeId == funId && e.Level == element.Level {
 				return fmt.Errorf("function '%s' already defined in the current scope", e.Value)
 			}
-			if e.Type == varId && e.Level == element.Level {
+			if e.TypeId == varId && e.Level == element.Level {
 				return fmt.Errorf("variable '%s' already defined in the current scope", e.Value)
 			}
-			if e.Type == typeId && e.Level == element.Level {
+			if e.TypeId == typeId && e.Level == element.Level {
 				return fmt.Errorf("type '%s' already defined in the current scope", e.Value)
 			}
 		}

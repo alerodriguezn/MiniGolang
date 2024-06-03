@@ -26,11 +26,11 @@ type expr_parserVisitor interface {
 	// Visit a parse tree produced by expr_parser#innerVarDecls.
 	VisitInnerVarDecls(ctx *InnerVarDeclsContext) interface{}
 
-	// Visit a parse tree produced by expr_parser#varDeclWithType.
-	VisitVarDeclWithType(ctx *VarDeclWithTypeContext) interface{}
-
 	// Visit a parse tree produced by expr_parser#varDeclWithoutType.
 	VisitVarDeclWithoutType(ctx *VarDeclWithoutTypeContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#varDeclWithType.
+	VisitVarDeclWithType(ctx *VarDeclWithTypeContext) interface{}
 
 	// Visit a parse tree produced by expr_parser#varDeclNoExp.
 	VisitVarDeclNoExp(ctx *VarDeclNoExpContext) interface{}
@@ -62,8 +62,20 @@ type expr_parserVisitor interface {
 	// Visit a parse tree produced by expr_parser#funcArgDecls.
 	VisitFuncArgDecls(ctx *FuncArgDeclsContext) interface{}
 
-	// Visit a parse tree produced by expr_parser#declType.
-	VisitDeclType(ctx *DeclTypeContext) interface{}
+	// Visit a parse tree produced by expr_parser#nestedDeclType.
+	VisitNestedDeclType(ctx *NestedDeclTypeContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#idDeclType.
+	VisitIdDeclType(ctx *IdDeclTypeContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#sliceDecType.
+	VisitSliceDecType(ctx *SliceDecTypeContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#arrayDecType.
+	VisitArrayDecType(ctx *ArrayDecTypeContext) interface{}
+
+	// Visit a parse tree produced by expr_parser#structDecType.
+	VisitStructDecType(ctx *StructDecTypeContext) interface{}
 
 	// Visit a parse tree produced by expr_parser#sliceDeclType.
 	VisitSliceDeclType(ctx *SliceDeclTypeContext) interface{}

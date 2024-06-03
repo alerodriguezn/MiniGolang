@@ -1,25 +1,19 @@
 package main;
 
+func main() {
 
-type hola struct{
-    x int;
-};
+    var arr [5]int;
+    var x = 10;
 
-func ejemplo2(x int) int {
+    arr[0] = 19;
 
-    var registro hola;
-    var x int = 10;
-    if x > 9 {
-        print("Hola");
-        if x > 10 {
-            print("Hola");
-        } else {
-            print("Adios");
-        };
+    x = arr[0] + 2;
 
-    };
+
+    println(x);
+
+    return;
 
 };
-
 
 
